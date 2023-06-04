@@ -15,12 +15,22 @@ func main() {
 
 	sales := generateSales(startDate, endDate)
 	cpu := generateCPUFromSales(sales)
+	disk := generateDiskFromSales(sales)
+	memory := generateMemoryFromSales(sales)
 
 	if err := createCSV("sales.csv", sales); err != nil {
 		log.Fatal(err)
 	}
 
 	if err := createCSV("cpu.csv", cpu); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := createCSV("disk.csv", disk); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := createCSV("memory.csv", memory); err != nil {
 		log.Fatal(err)
 	}
 
@@ -62,6 +72,45 @@ func generateCPUFromSales(sales []timeserie) []timeserie {
 			ts:    ts.ts,
 			value: value,
 		})
+	}
+
+	return timeseries
+}
+
+func generateDiskFromSales(sales []timeserie) []timeserie {
+	timeseries := make([]timeserie, 0)
+
+	cost := 4
+	for _, ts := range sales {
+		value := (ts.value / cost) / 100
+
+		timeseries = append(timeseries, timeserie{
+			ts:    ts.ts,
+			value: value,
+		})
+	}
+
+	return timeseries
+}
+
+func generateMemoryFromSales(sales []timeserie) []timeserie {
+	timeseries := make([]timeserie, 0)
+
+	cost := 2
+	var lastTS time.Time
+	for _, ts := range sales {
+		if ts.ts.Month() <= 10 && (ts.ts.Month() > lastTS.Month()) {
+			cost = cost * 2
+		}
+
+		value := (ts.value * cost) / 100
+
+		timeseries = append(timeseries, timeserie{
+			ts:    ts.ts,
+			value: value,
+		})
+
+		lastTS = ts.ts
 	}
 
 	return timeseries
